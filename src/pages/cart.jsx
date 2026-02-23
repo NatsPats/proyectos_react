@@ -1,3 +1,5 @@
+import { useState } from 'react';
+import axios from 'axios';
 import useCartStore from '../store/cartStore';
 
 const Cart = () => {
@@ -6,7 +8,28 @@ const Cart = () => {
   const updateQuantity = useCartStore((s) => s.updateQuantity);
   const clearCart = useCartStore((s) => s.clearCart);
 
+  const [loading, setLoading] = useState(false);
+
   const total = items.reduce((s, i) => s + i.price * i.quantity, 0);
+
+  const handleCheckout = async () => {
+    if (items.length === 0) return;
+
+    setLoading(true);
+    try {
+      await axios.post('http://localhost:3001/compras', {
+        usuario: 'Mijael',
+        total,
+      });
+      alert('Compra realizada con éxito');
+      clearCart();
+    } catch (error) {
+      console.error(error);
+      alert('Error al procesar la compra');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <main className="container mx-auto py-12 px-4">
@@ -25,7 +48,13 @@ const Cart = () => {
                   <div className="text-sm text-slate-400">${item.price.toFixed(2)}</div>
                 </div>
                 <div className="flex items-center gap-2">
-                  <input type="number" min="1" className="w-16 bg-slate-900 text-slate-200 rounded-md px-2 py-1 border border-slate-700" value={item.quantity} onChange={(e) => updateQuantity(item.id, Number(e.target.value))} />
+                  <input
+                    type="number"
+                    min="1"
+                    className="w-16 bg-slate-900 text-slate-200 rounded-md px-2 py-1 border border-slate-700"
+                    value={item.quantity}
+                    onChange={(e) => updateQuantity(item.id, Number(e.target.value))}
+                  />
                   <button onClick={() => removeItem(item.id)} className="text-red-400">Eliminar</button>
                 </div>
               </li>
@@ -38,8 +67,20 @@ const Cart = () => {
           </div>
 
           <div className="flex gap-2">
-            <button onClick={clearCart} className="px-4 py-2 rounded-full bg-slate-700 text-white">Vaciar</button>
-            <button className="px-4 py-2 rounded-full bg-gradient-to-r from-indigo-500 to-cyan-400 text-white">Pagar</button>
+            <button
+              onClick={clearCart}
+              disabled={loading}
+              className="px-4 py-2 rounded-full bg-slate-700 text-white disabled:opacity-50"
+            >
+              Vaciar
+            </button>
+            <button
+              onClick={handleCheckout}
+              disabled={loading || items.length === 0}
+              className="px-4 py-2 rounded-full bg-gradient-to-r from-indigo-500 to-cyan-400 text-white disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {loading ? 'Procesando...' : 'Pagar'}
+            </button>
           </div>
         </div>
       )}

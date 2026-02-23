@@ -15,7 +15,10 @@ const Home = () => {
 
         <div className="flex items-center justify-center">
           <div className="w-80 h-80 rounded-3xl bg-gradient-to-tr from-slate-800/40 to-transparent border border-slate-700 flex items-center justify-center transform-gpu rotate-6">
-            <div className="w-56 h-56 rounded-2xl bg-gradient-to-br from-indigo-600/20 to-cyan-400/10 border border-slate-700 flex items-center justify-center text-slate-100 font-semibold">Estética Futurista</div>
+            <div className="w-56 h-56 rounded-2xl bg-gradient-to-br from-indigo-600/20 to-cyan-400/10 border border-slate-700 flex items-center justify-center text-slate-100 font-semibold">
+              <img src="https://www.elcato.org/sites/default/files/styles/story_default-2x/public/images/stories/d56d4a362be3913a35bede370b130f00.jpg?itok=k57g2PiK&timestamp=1495565689" alt="Gato"
+                className='w-full h-full object-cover' />
+            </div>
           </div>
         </div>
       </section>
