@@ -1,7 +1,9 @@
 import { Link } from 'react-router-dom';
 import useCartStore from '../store/cartStore';
+import { toast } from 'react-toastify';
 
 export default function ProductCard({ product }) {
+
   const addItem = useCartStore((s) => s.addItem);
 
   return (

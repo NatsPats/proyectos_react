@@ -13,3 +13,25 @@ model Compra {
   total   Float
   fecha   DateTime @default(now())
 }
+
+model User {
+  id                 Int            @id @default(autoincrement())
+  name               String
+  email              String         @unique
+  passwordHash       String?        // opcional: usuarios Google no tienen password
+  isVerified         Boolean        @default(false)
+  verifyToken        String?        @unique
+  verifyTokenExpiry  DateTime?
+  resetToken         String?        @unique
+  resetTokenExpiry   DateTime?
+  createdAt          DateTime       @default(now())
+  refreshTokens      RefreshToken[]
+}
+
+model RefreshToken {
+  id        Int      @id @default(autoincrement())
+  token     String   @unique
+  userId    Int
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+}

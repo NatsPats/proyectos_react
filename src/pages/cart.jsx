@@ -1,12 +1,18 @@
 import { useState } from 'react';
 import axios from 'axios';
+import { useNavigate } from 'react-router-dom';
+import { toast } from 'react-toastify';
 import useCartStore from '../store/cartStore';
+import useAuthStore from '../store/authStore';
 
 const Cart = () => {
+  const navigate = useNavigate();
   const items = useCartStore((s) => s.items);
   const removeItem = useCartStore((s) => s.removeItem);
   const updateQuantity = useCartStore((s) => s.updateQuantity);
   const clearCart = useCartStore((s) => s.clearCart);
+
+  const { user, accessToken } = useAuthStore();
 
   const [loading, setLoading] = useState(false);
 
@@ -15,17 +21,33 @@ const Cart = () => {
   const handleCheckout = async () => {
     if (items.length === 0) return;
 
+    // Si no hay sesión → redirigir a login
+    if (!user || !accessToken) {
+      toast.info('Debes iniciar sesión para comprar');
+      navigate('/login');
+      return;
+    }
+
     setLoading(true);
     try {
-      await axios.post('http://localhost:3001/compras', {
-        usuario: 'Mijael',
-        total,
-      });
-      alert('Compra realizada con éxito');
+      await axios.post(
+        'http://localhost:3001/compras',
+        { usuario: user.name, total },
+        {
+          headers: {
+            Authorization: `Bearer ${accessToken}`, // JWT en el header
+          },
+        }
+      );
+      toast.success('¡Compra realizada con éxito! 🎉');
       clearCart();
     } catch (error) {
-      console.error(error);
-      alert('Error al procesar la compra');
+      if (error.response?.status === 401) {
+        toast.error('Tu sesión expiró. Vuelve a iniciar sesión.');
+        navigate('/login');
+      } else {
+        toast.error('Error al procesar la compra');
+      }
     } finally {
       setLoading(false);
     }
@@ -66,6 +88,13 @@ const Cart = () => {
             <div className="text-xl font-bold">${total.toFixed(2)}</div>
           </div>
 
+          {/* Aviso si no hay sesión */}
+          {!user && (
+            <div className="text-sm text-amber-400 bg-amber-400/10 border border-amber-400/30 rounded-lg px-4 py-2">
+              ⚠️ Debes <span className="font-medium underline cursor-pointer" onClick={() => navigate('/login')}>iniciar sesión</span> para completar la compra.
+            </div>
+          )}
+
           <div className="flex gap-2">
             <button
               onClick={clearCart}
@@ -77,7 +106,7 @@ const Cart = () => {
             <button
               onClick={handleCheckout}
               disabled={loading || items.length === 0}
-              className="px-4 py-2 rounded-full bg-gradient-to-r from-indigo-500 to-cyan-400 text-white disabled:opacity-50 disabled:cursor-not-allowed"
+              className="px-4 py-2 rounded-full bg-linear-to-r from-indigo-500 to-cyan-400 text-white disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {loading ? 'Procesando...' : 'Pagar'}
             </button>
